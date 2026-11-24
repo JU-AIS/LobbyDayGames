@@ -41,12 +41,27 @@ Risk to check on the first recording: if Haiku guesses too early, the player has
 
 ## Recording the videos
 
-- Drawn by Oskar and Victor in Paint, recorded as a screen capture.
-- Only the canvas in frame, white background, no text on screen.
-- Roughly 20 to 40 seconds per drawing, steady pace.
-- One word per video. File name = the word, e.g. `bicycle.mp4`.
+Drawn by Oskar and Victor in Paint, recorded with the Windows Snipping Tool. Agree on who draws which words first, so nobody draws the same thing.
 
-## Planned structure
+1. Open Paint, white canvas, black brush, medium thickness.
+2. Press **Win+Shift+R** and drag a box around the canvas only (no toolbar, no text, no mouse cursor outside it). A smaller box gives a smaller file.
+3. Click Start, wait 1 second, then draw. Roughly 20 to 40 seconds, steady pace, no writing letters or the word.
+4. Stop, save as mp4.
+5. Put it in `rounds/<word>/video.mp4` (folder name = the answer, lowercase English, e.g. `rounds/bicycle/video.mp4`).
+6. Add `rounds/<word>/meta.json` when the word has other accepted answers: `{ "word": "bicycle", "synonyms": ["bike"] }`.
+7. Run prerender (see `prerender/`), then open `game/index.html` and play the round once.
+
+Good words: concrete objects that are recognisable halfway through and have one obvious name (bicycle, guitar, lighthouse, snowman, umbrella). Avoid words that need text or colour to tell apart.
+
+Keep each video to a few MB. If one is big, shrink it with ffmpeg (no audio, 720p):
+
+```
+ffmpeg -i big.mp4 -an -vf scale=-2:720 -c:v libx264 -crf 28 -pix_fmt yuv420p -movflags +faststart video.mp4
+```
+
+ffmpeg is also needed by prerender. On Windows: `winget install Gyan.FFmpeg`, then open a new terminal.
+
+## Structure
 
 ```
 guess-the-drawing/
