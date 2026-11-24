@@ -37,15 +37,15 @@ window.ROUNDS = [
     "video": "rounds/giraffe/video.mp4",
     "guesses": [
       {
-        "t": 3,
+        "t": 4,
         "guess": "river"
       },
       {
-        "t": 6,
+        "t": 8,
         "guess": "giraffe"
       }
     ],
-    "aiCorrectAt": 6
+    "aiCorrectAt": 8
   },
   {
     "word": "rat",
@@ -56,7 +56,7 @@ window.ROUNDS = [
     "guesses": [
       {
         "t": 3,
-        "guess": "umbrella"
+        "guess": "elephant"
       },
       {
         "t": 6,
@@ -64,11 +64,11 @@ window.ROUNDS = [
       },
       {
         "t": 9,
-        "guess": "dinosaur"
+        "guess": "dog"
       },
       {
         "t": 12,
-        "guess": "dinosaur"
+        "guess": "horse"
       },
       {
         "t": 15,
@@ -96,7 +96,7 @@ window.ROUNDS = [
       },
       {
         "t": 33,
-        "guess": "dog"
+        "guess": "cat"
       },
       {
         "t": 36,

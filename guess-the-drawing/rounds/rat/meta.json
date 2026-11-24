@@ -1,1 +1,1 @@
-{ "word": "rat", "synonyms": ["mouse"] }
+{ "word": "rat", "synonyms": ["mouse"], "prompt": "Someone is drawing an animal in Paint and this is how far they have got. What animal is this? Answer with exactly one lowercase English noun and nothing else. If the canvas is empty, answer: nothing" }

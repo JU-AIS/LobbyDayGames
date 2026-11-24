@@ -42,14 +42,14 @@ const norm = (s) => s.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
 const firstWord = (text) => text.trim().split(/\s+/)[0].toLowerCase().replace(/[^\p{L}\p{N}-]/gu, "") || null;
 
 // Any failure (timeout, rate limit, ...) becomes a gap instead of killing the whole run.
-async function guessFrame(file) {
-  try { return await (USE_CLI ? askCli(file) : askApi(file)); }
+async function guessFrame(file, prompt = PROMPT) {
+  try { return await (USE_CLI ? askCli(file, prompt) : askApi(file, prompt)); }
   catch (e) { console.warn(`  ${path.basename(file)}: ${e.message}`); return null; }
 }
 
 // Fresh headless session per frame, run inside the temp folder so file and folder names never reveal the word.
-function askCli(file) {
-  const prompt = `Read the image file ${path.basename(file)} in the current directory. ${PROMPT}`;
+function askCli(file, question) {
+  const prompt = `Read the image file ${path.basename(file)} in the current directory. ${question}`;
   const cliArgs = ["-p", prompt, "--model", MODEL, "--allowedTools", "Read",
     "--system-prompt", "You look at images and answer with a single English word.",
     "--strict-mcp-config", "--disable-slash-commands", "--no-session-persistence", "--output-format", "json"];
@@ -65,7 +65,7 @@ function askCli(file) {
   });
 }
 
-async function askApi(file) {
+async function askApi(file, question) {
   const res = await client.messages.create({
     model: MODEL,
     max_tokens: 2000,
@@ -74,7 +74,7 @@ async function askApi(file) {
       role: "user",
       content: [
         { type: "image", source: { type: "base64", media_type: "image/jpeg", data: fs.readFileSync(file, "base64") } },
-        { type: "text", text: PROMPT },
+        { type: "text", text: question },
       ],
     }],
   });
@@ -88,7 +88,10 @@ function readMeta(dir) {
   try { meta = JSON.parse(fs.readFileSync(path.join(dir, "meta.json"), "utf8")); } catch {}
   const word = meta.word ?? path.basename(dir);
   const synonyms = meta.synonyms ?? [];
-  return { word, synonyms, answers: [word, ...synonyms].map(norm) };
+  // Optional per-round overrides: interval (seconds between guesses, first guess at t = interval) and prompt.
+  const interval = Number(meta.interval) > 0 ? Number(meta.interval) : INTERVAL;
+  const prompt = typeof meta.prompt === "string" && meta.prompt.trim() ? meta.prompt.trim() : PROMPT;
+  return { word, synonyms, answers: [word, ...synonyms].map(norm), interval, prompt };
 }
 
 // One round as the game sees it. aiCorrectAt = time of the AI's first right guess (null = never).
@@ -111,7 +114,8 @@ for (const dir of dirs) {
   execFileSync(ffmpeg, ["-loglevel", "error", "-i", video, "-vf", "fps=1,scale=512:-2", "-q:v", "4", path.join(tmp, "%04d.jpg")]);
   const seconds = fs.readdirSync(tmp).length;
   const times = [];
-  for (let t = INTERVAL; t < seconds; t += INTERVAL) times.push(t);
+  const { answers, interval, prompt } = readMeta(dir);
+  for (let t = interval; t < seconds; t += interval) times.push(t);
   const frameOf = (t) => path.join(tmp, String(t + 1).padStart(4, "0") + ".jpg");
 
   if (DRY) {
@@ -120,12 +124,11 @@ for (const dir of dirs) {
     continue;
   }
 
-  const { answers } = readMeta(dir);
   const isRight = (g) => answers.includes(norm(g.guess));
   const guesses = [];
   for (let i = 0; i < times.length && !guesses.some(isRight); i += PARALLEL) {
     const batch = times.slice(i, i + PARALLEL);
-    const said = await Promise.all(batch.map((t) => guessFrame(frameOf(t))));
+    const said = await Promise.all(batch.map((t) => guessFrame(frameOf(t), prompt)));
     batch.forEach((t, j) => said[j] ? guesses.push({ t, guess: said[j] }) : console.warn(`  t=${t}: no guess, skipped`));
   }
   const hit = guesses.findIndex(isRight);

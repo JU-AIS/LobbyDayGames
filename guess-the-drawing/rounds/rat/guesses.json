@@ -1,7 +1,7 @@
 [
   {
     "t": 3,
-    "guess": "umbrella"
+    "guess": "elephant"
   },
   {
     "t": 6,
@@ -9,11 +9,11 @@
   },
   {
     "t": 9,
-    "guess": "dinosaur"
+    "guess": "dog"
   },
   {
     "t": 12,
-    "guess": "dinosaur"
+    "guess": "horse"
   },
   {
     "t": 15,
@@ -41,7 +41,7 @@
   },
   {
     "t": 33,
-    "guess": "dog"
+    "guess": "cat"
   },
   {
     "t": 36,
