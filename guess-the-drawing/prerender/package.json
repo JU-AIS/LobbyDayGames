@@ -1,0 +1,10 @@
+{
+  "name": "gtd-prerender",
+  "private": true,
+  "scripts": {
+    "start": "node --env-file-if-exists=.env prerender.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.13.0"
+  }
+}
