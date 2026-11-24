@@ -1,7 +1,12 @@
 /* JU AIS theme (from juais.se): deep purple night with a dotted grid, lavender accent, serif headings,
    mono labels. The drawing is a white sheet of paper in the middle; the AI speaks in rose.
-   Offline kiosk: no web fonts are loaded. The site's faces are used if installed, otherwise
-   Georgia and Consolas, which are on every Windows laptop. */
+   Fonts and logo are bundled in assets/ (copied from juais.se, fonts under the SIL Open Font License),
+   so the kiosk works offline. */
+@font-face { font-family: "Libre Caslon Text"; font-weight: 400; font-display: swap; src: url("assets/libre-caslon-text-400.woff2") format("woff2"); }
+@font-face { font-family: "Libre Caslon Text"; font-weight: 700; font-display: swap; src: url("assets/libre-caslon-text-700.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 400; font-display: swap; src: url("assets/ibm-plex-mono-400.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 500 700; font-display: swap; src: url("assets/ibm-plex-mono-500.woff2") format("woff2"); }
+
 :root {
   --bg: #1f1630;          /* site --color-bg-dark */
   --card: #2e2246;        /* site --color-bg */
@@ -46,7 +51,7 @@ body {
   border-bottom: 1px solid var(--line);
 }
 .brand { display: flex; align-items: center; gap: 10px; font: 600 17px var(--font-mono); letter-spacing: .14em; }
-.brand-mark { width: 26px; height: 26px; color: var(--accent); }
+.brand-mark { width: 30px; height: 30px; border-radius: 22%; }
 .topbar-right { display: flex; align-items: center; gap: 14px; font: 500 14px var(--font-mono); color: var(--muted); letter-spacing: .06em; }
 .demo-flag {
   font: 600 12px var(--font-mono); text-transform: uppercase; letter-spacing: .12em;
