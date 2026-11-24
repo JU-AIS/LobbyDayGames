@@ -67,6 +67,7 @@ Open `game/index.html` in Chrome (double-click works, no server needed).
 - A pause without a submitted guess resumes the video after 8 seconds, so nobody can stop the clock forever. Esc also resumes.
 - Staff panel: **Ctrl+Shift+A**. Shows how many scores and sign-ups are stored, exports both as CSV, and can clear all data.
 - Scores and sign-ups live in the browser's localStorage on that laptop. Export before clearing browser data.
+- Commit `rounds/rounds.js` and the round videos, otherwise the game has no rounds on the lobby laptop. Keep each video to a few MB; above 50 MB we need another plan.
 
 ## Status
 
