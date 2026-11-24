@@ -129,7 +129,11 @@ input::placeholder { color: rgba(211, 204, 224, .6); }
   display: flex; align-items: center; justify-content: center; min-height: 0;
   box-shadow: 0 0 0 1px var(--line), 0 24px 60px -24px rgba(0, 0, 0, .7), 0 0 80px -30px rgba(201, 179, 242, .5);
 }
-.canvas-frame video { width: 100%; height: 100%; max-height: 62vh; object-fit: contain; display: block; background: var(--paper); }
+/* The video box is sized from JS to the video's exact aspect ratio and sits inset from the rounded frame:
+   no letterbox area and no rounded clip on the video itself, which some GPUs draw as a dark edge line. */
+.canvas-frame { padding: 12px; }
+.canvas-frame video { display: block; width: 100%; height: 100%; max-height: 62vh; object-fit: contain; background: var(--paper); }
+.canvas-frame video.fitted { width: auto; height: auto; max-height: none; object-fit: fill; flex: none; }
 
 /* Pause: dim the video lightly and show "Paused" in the corner, so the drawing stays visible */
 .paused-tag {

@@ -15,6 +15,20 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var video = $("video");
+  // Size the video box to the video's exact aspect ratio inside the frame (see .canvas-frame video in style.css).
+  function fitVideo() {
+    var vw = video.videoWidth, vh = video.videoHeight, frame = video.parentNode;
+    if (!vw || !vh || !frame.clientWidth) return;
+    var cs = getComputedStyle(frame);
+    var w = frame.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    var h = Math.min(frame.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom), window.innerHeight * 0.62);
+    var k = Math.min(w / vw, h / vh);
+    video.style.width = Math.floor(vw * k) + "px";
+    video.style.height = Math.floor(vh * k) + "px";
+    video.classList.add("fitted");
+  }
+  video.addEventListener("loadedmetadata", fitVideo);
+  window.addEventListener("resize", fitVideo);
 
   // ---------- data ----------
   function loadPool() {
@@ -170,6 +184,7 @@
     };
     video.src = round.src;
     video.load();
+    video.classList.remove("fitted"); video.style.width = video.style.height = "";
     $("ai-guess").textContent = "...";
     $("ai-guess").className = "ai-guess";
     $("ai-history").innerHTML = "";
@@ -189,6 +204,7 @@
 
   function startRound() {
     show("play");
+    fitVideo();
     r.phase = "playing";
     $("guess").focus();
     video.currentTime = 0;
