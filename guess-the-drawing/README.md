@@ -58,6 +58,16 @@ guess-the-drawing/
 
 Scoreboard and sign-up data are stored locally in the browser and exported to CSV after the event. Email is optional and collected with explicit GDPR consent; it is deleted after recruitment.
 
+## Running the game
+
+Open `game/index.html` in Chrome (double-click works, no server needed).
+
+- With `rounds/rounds.js` present (written by `prerender/`), the game uses those rounds. Without it, it falls back to three demo rounds in `game/demo/` and shows a "Demo rounds" tag.
+- 3 random rounds per game. Settings are at the top of `game/game.js` (rounds per game, 6 s grace, 10 s miss penalty, 8 s max pause).
+- A pause without a submitted guess resumes the video after 8 seconds, so nobody can stop the clock forever. Esc also resumes.
+- Staff panel: **Ctrl+Shift+A**. Shows how many scores and sign-ups are stored, exports both as CSV, and can clear all data.
+- Scores and sign-ups live in the browser's localStorage on that laptop. Export before clearing browser data.
+
 ## Status
 
-Concept only. Target: first draft on GitHub and Discord by 2026-11-25, used at the lobby days 2026-11-27 (JIBS) and 2026-11-30 (JTH).
+Game playable with demo rounds (branch `feat/gtd-game`). Prerender on `feat/gtd-prerender`, not yet run against Haiku. Target: first draft on GitHub and Discord by 2026-11-25, used at the lobby days 2026-11-27 (JIBS) and 2026-11-30 (JTH).
