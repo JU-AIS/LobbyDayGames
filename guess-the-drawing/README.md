@@ -2,22 +2,32 @@
 
 A quick lobby day game: beat the AI at guessing what is being drawn.
 
-The player watches a pre-recorded video of someone drawing in Paint. An AI guesses live on screen as the drawing appears. The player pauses the video and types a guess whenever they think they know it. Fastest correct guesses top the scoreboard.
+The player watches a pre-recorded video of someone drawing in Paint. An AI guesses live on screen as the drawing appears. The player pauses the video and types a guess whenever they think they know it. Your score is how much faster (or slower) you were than the AI. The biggest lead tops the scoreboard.
 
 Runs fully offline on one laptop. No camera, no network and no API calls during the event. All AI guesses are pre-rendered.
 
 ## Gameplay
 
 1. The player enters a name (shown on the scoreboard).
-2. A round starts: the drawing video plays and the AI's guesses appear on screen with timestamps.
-3. The player can pause at any time and type a guess. Wrong guess: the video continues.
-4. When the AI gets it right, the correct word is hidden (not revealed to the player) and the player has **6 more seconds** to guess correctly before the round ends.
-5. After the last round: score, scoreboard position, then the JU AIS sign-up form.
+2. Each game is 3 random rounds, picked from the eligible rounds in random order (see Scoring). Nobody is guaranteed the same rounds.
+3. A round starts: the drawing video plays and the AI's guesses appear on screen.
+4. The player can pause at any time and type a guess. Wrong guess: the input shakes and the video continues.
+5. Correct guess: a green "Correct!" flash with the player's time, then the round result ("You beat the AI by 3.1 s" or "The AI won by 2.0 s").
+6. When the AI gets it right, the correct word is hidden (not revealed to the player) and the player has **6 more seconds** to guess correctly before the round ends.
+7. Some rounds the AI never gets right. There is no 6 second window then: the round runs to the end of the video, and if the player has not guessed by then it is a miss.
+8. After the last round: "You beat the AI x of 3", the total margin, scoreboard position, then the JU AIS sign-up form.
 
 ## Scoring
 
-- Score = total time (seconds into the video) the player needed to guess correctly, summed over all rounds. Lowest total wins.
-- A missed round counts as the round's end time plus a penalty (proposed: +10 s). Not final.
+Beat the AI: the score of a round is the player's time minus the AI's time (the margin). Negative means the player was faster. The total is the sum over the 3 rounds, shown with a sign (for example `-4.2 s` or `+3.0 s`). Lowest total wins.
+
+- AI time: `aiCorrectAt` for the round (seconds into the video). If the AI never gets it right, the AI time is the video length.
+- Player time: the video time when the player guessed correctly.
+- Missed round, AI got it: the end of the 6 second window (capped at the video length) plus a 10 s penalty, minus the AI time.
+- Missed round, AI never got it: the video length plus the 10 s penalty, minus the AI time (so +10 s).
+- Rounds the AI never gets right therefore count against the video length: a correct guess at 14 s in a 24 s video is -10 s.
+- Round gate (`MIN_AI_SECONDS` = 6 in `game/game.js`): only rounds where the AI never gets it, or gets it at 6 s or later, can be picked. Rounds where the AI is right sooner would leave the player no chance. If fewer than 3 rounds are eligible, the game uses what there is.
+- The scoreboard shows the total margin plus a marker per round (a check when the player beat the AI).
 
 ## Answer matching
 
@@ -86,10 +96,10 @@ Scoreboard and sign-up data are stored locally in the browser and exported to CS
 Open `game/index.html` in Chrome (double-click works, no server needed).
 
 - With `rounds/rounds.js` present (written by `prerender/`), the game uses those rounds. Without it, it falls back to three demo rounds in `game/demo/` and shows a "Demo rounds" tag.
-- Every player gets the same 3 rounds in the same order, so the scoreboard is fair: the first words of `PLAYLIST` at the top of `game/game.js` (currently shark, wolf, crocodile). Other settings there: rounds per game, 6 s grace, 10 s miss penalty, 8 s max pause.
+- Each game picks 3 random distinct rounds from the eligible pool (see Scoring). Settings at the top of `game/game.js`: rounds per game, `MIN_AI_SECONDS`, 6 s grace, 10 s miss penalty, 8 s max pause.
 - A pause without a submitted guess resumes the video after 8 seconds, so nobody can stop the clock forever. Esc also resumes.
 - Staff panel: **Ctrl+Shift+A**. Shows how many scores and sign-ups are stored, exports both as CSV, and can clear all data.
-- Scores and sign-ups live in the browser's localStorage on that laptop. Export before clearing browser data.
+- Scores and sign-ups live in the browser's localStorage on that laptop (scores under `gtd.v2.scores`; older total-time scores under `gtd.v1.scores` are ignored). Export before clearing browser data.
 - Commit `rounds/rounds.js` and the round videos, otherwise the game has no rounds on the lobby laptop. Keep each video to a few MB; above 50 MB we need another plan.
 
 ## Web version

@@ -19,6 +19,8 @@
   --deep: #4a2390;        /* site --color-primary */
   --ai: #ff8fab;          /* the AI */
   --ai-fg: #2a0d18;
+  --ok: #8fe3b0;          /* success: beat the AI, correct guess */
+  --ok-fg: #0d2a1a;
   --paper: #ffffff;
   --gold: #f2d27a;
   --danger: #ff8a8a;
@@ -99,11 +101,16 @@ input::placeholder { color: rgba(211, 204, 224, .6); }
 .board h2 { display: flex; justify-content: space-between; align-items: baseline; }
 .board h2 small { font: 600 12px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
 .scoreboard { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font: 500 18px var(--font-mono); font-variant-numeric: tabular-nums; }
-.scoreboard li { display: grid; grid-template-columns: 2.4em 1fr auto; gap: 10px; padding: 9px 12px; border-radius: 8px; }
+.scoreboard li { display: grid; grid-template-columns: 2.4em 1fr auto auto; gap: 10px; padding: 9px 12px; border-radius: 8px; }
 .scoreboard li:first-child { background: rgba(242, 210, 122, .14); color: var(--gold); font-weight: 700; }
 .scoreboard li.latest { outline: 2px solid var(--accent); }
 .scoreboard .rank { color: var(--muted); }
 .scoreboard li:first-child .rank { color: var(--gold); }
+.scoreboard .marks { display: flex; gap: 6px; align-items: center; font-size: 15px; }
+.scoreboard .marks i { font-style: normal; width: 1em; text-align: center; }
+.scoreboard .marks .win { color: var(--accent); font-weight: 700; }
+.scoreboard .marks .lose { color: var(--muted); opacity: .6; }
+.scoreboard li:first-child .marks .win { color: var(--ok); }
 .scoreboard .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-body); }
 
 /* Round intro */
@@ -113,7 +120,7 @@ input::placeholder { color: rgba(211, 204, 224, .6); }
 .play { display: flex; flex-direction: column; gap: 14px; }
 .hud { display: flex; justify-content: space-between; align-items: baseline; font: 600 15px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-variant-numeric: tabular-nums; }
 .hud .clock { font: 600 30px var(--font-mono); color: var(--fg); letter-spacing: 0; }
-.stage { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 18px; }
+.stage { position: relative; flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 18px; }
 .canvas-frame {
   position: relative; background: var(--paper); border-radius: var(--radius-lg); overflow: hidden;
   display: flex; align-items: center; justify-content: center; min-height: 0;
@@ -140,13 +147,28 @@ input::placeholder { color: rgba(211, 204, 224, .6); }
 
 .guess-form { display: flex; gap: 10px; }
 .guess-form input { flex: 1; font-size: 28px; border: 2px solid var(--accent); background: var(--card); }
-.guess-form.shake { animation: shake .3s; }
+.guess-form input.wrong { animation: shake .3s; border-color: var(--ai); outline-color: var(--ai); }
 @keyframes shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
 .my-guesses { list-style: none; margin: 0; padding: 0; display: flex; gap: 10px; flex-wrap: wrap; min-height: 28px; font-family: var(--font-mono); }
 .my-guesses li { color: var(--muted); text-decoration: line-through; opacity: .8; }
 
+/* Correct-guess flash over the stage */
+.correct-flash {
+  position: absolute; inset: 0; z-index: 5; border-radius: var(--radius-lg);
+  background: rgba(143, 227, 176, .94); color: var(--ok-fg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  animation: flash-in .18s ease-out;
+}
+.flash-title { margin: 0; font: 700 clamp(64px, 10vw, 140px)/1 var(--font-display); }
+.flash-time { margin: 0; font: 600 clamp(28px, 4vw, 48px) var(--font-mono); font-variant-numeric: tabular-nums; }
+@keyframes flash-in { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
+
 /* Result + final */
-.result-word { font: 700 clamp(56px, 9vw, 128px)/1 var(--font-display); margin: 0; }
+.result-headline { font: 700 clamp(44px, 6.4vw, 92px)/1.05 var(--font-display); margin: 0; }
+.result-headline.ok { color: var(--ok); }
+.result-headline.ai { color: var(--ai); }
+.result-headline.muted { color: var(--muted); }
+.result-word { font: 700 clamp(28px, 3.6vw, 48px)/1 var(--font-display); margin: 0; color: var(--muted); }
 .versus { display: flex; gap: 56px; font-variant-numeric: tabular-nums; }
 .versus div { display: flex; flex-direction: column; gap: 4px; }
 .versus .label { font: 600 13px var(--font-mono); text-transform: uppercase; letter-spacing: .18em; color: var(--muted); }
@@ -154,9 +176,15 @@ input::placeholder { color: rgba(211, 204, 224, .6); }
 .versus div:last-child .num { color: var(--ai); }
 .versus .num { font: 600 46px var(--font-mono); }
 .final-total { font: 600 clamp(72px, 11vw, 150px)/1 var(--font-mono); margin: 0; color: var(--accent); }
+.final-total.ok { color: var(--ok); }
+.final-total.ai { color: var(--ai); }
 .final-rank { font: 700 30px var(--font-display); margin: 0; }
 .final-rank.first { color: var(--gold); }
-.final-rounds { list-style: none; padding: 0; margin: 0; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; color: var(--muted); font: 500 16px var(--font-mono); font-variant-numeric: tabular-nums; }
+.final-rounds { list-style: none; padding: 0; margin: 0; display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; font: 500 18px var(--font-mono); font-variant-numeric: tabular-nums; }
+.final-rounds li { display: flex; gap: 10px; }
+.final-rounds .word { color: var(--muted); }
+.final-rounds .ok .margin { color: var(--ok); }
+.final-rounds .ai .margin { color: var(--ai); }
 
 /* Sign-up (signup.css does the form; these tie it to the theme) */
 .signup-screen { display: flex; justify-content: center; align-items: flex-start; overflow: auto; }
@@ -174,6 +202,6 @@ input::placeholder { color: rgba(211, 204, 224, .6); }
   .start, .stage { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ai-guess.pop, .guess-form.shake, .ai-label::before { animation: none; }
+  .ai-guess.pop, .guess-form input.wrong, .correct-flash, .ai-label::before { animation: none; }
   .btn { transition: none; }
 }

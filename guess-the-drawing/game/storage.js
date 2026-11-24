@@ -7,12 +7,14 @@ window.GTD_WEB = window.location.protocol !== 'file:';
 (function () {
   'use strict';
 
-  var PREFIX = 'gtd.v1.';
+  // Scores moved to v2 (margin vs the AI); old v1 total-time scores must not mix in. Sign-ups keep their key.
+  var KEYS = { scores: 'gtd.v2.scores', signups: 'gtd.v1.signups' };
+  var LEGACY_SCORES_KEY = 'gtd.v1.scores';
   var mem = { scores: [], signups: [] };
 
   function read(name) {
     try {
-      var raw = window.localStorage.getItem(PREFIX + name);
+      var raw = window.localStorage.getItem(KEYS[name]);
       if (raw !== null) {
         var arr = JSON.parse(raw);
         if (Array.isArray(arr)) mem[name] = arr;
@@ -23,7 +25,7 @@ window.GTD_WEB = window.location.protocol !== 'file:';
 
   function write(name, list) {
     mem[name] = list;
-    try { window.localStorage.setItem(PREFIX + name, JSON.stringify(list)); } catch (e) { /* memory only */ }
+    try { window.localStorage.setItem(KEYS[name], JSON.stringify(list)); } catch (e) { /* memory only */ }
   }
 
   function newId() {
@@ -47,7 +49,14 @@ window.GTD_WEB = window.location.protocol !== 'file:';
       name: String(o.name == null ? '' : o.name).trim(),
       total: Number(o.total) || 0,
       rounds: (Array.isArray(o.rounds) ? o.rounds : []).map(function (r) {
-        return { word: String(r && r.word != null ? r.word : ''), time: Number(r && r.time) || 0, solved: !!(r && r.solved) };
+        r = r || {};
+        return {
+          word: String(r.word != null ? r.word : ''),
+          playerTime: r.playerTime == null ? null : Number(r.playerTime) || 0,
+          aiTime: Number(r.aiTime) || 0,
+          margin: Number(r.margin) || 0,
+          beat: !!r.beat
+        };
       })
     };
     var list = read('scores').slice();
@@ -60,6 +69,7 @@ window.GTD_WEB = window.location.protocol !== 'file:';
     return sortedScores().slice(0, n == null ? 10 : n);
   }
 
+  // Total = summed margin vs the AI (negative = ahead of the AI); lowest ranks first.
   // A new score loses ties against existing ones (it has a later date).
   function rankOf(total) {
     total = Number(total) || 0;
@@ -121,10 +131,15 @@ window.GTD_WEB = window.location.protocol !== 'file:';
   function exportCSV() {
     var day = today();
 
-    var scoreRows = [csvLine(['date', 'name', 'total', 'rounds'])];
+    // rounds = word:playerTime:aiTime:margin:beat per round ("miss" when the player did not get it), joined by |
+    var scoreRows = [csvLine(['date', 'name', 'total_margin', 'beat_count', 'rounds'])];
     read('scores').slice().sort(byTotal).forEach(function (s) {
-      var rounds = (s.rounds || []).map(function (r) { return r.word + ':' + r.time + ':' + r.solved; }).join('|');
-      scoreRows.push(csvLine([cell(s.date), cell(s.name, true), cell(s.total), cell(rounds, true)]));
+      var list = s.rounds || [];
+      var beat = list.filter(function (r) { return r.beat; }).length;
+      var rounds = list.map(function (r) {
+        return [r.word, r.playerTime == null ? 'miss' : r.playerTime, r.aiTime, r.margin, r.beat].join(':');
+      }).join('|');
+      scoreRows.push(csvLine([cell(s.date), cell(s.name, true), cell(s.total), cell(beat), cell(rounds, true)]));
     });
 
     var signupRows = [csvLine(['date', 'name', 'email', 'consent', 'departments', 'interested'])];
@@ -144,6 +159,7 @@ window.GTD_WEB = window.location.protocol !== 'file:';
   function clearAll() {
     write('scores', []);
     write('signups', []);
+    try { window.localStorage.removeItem(LEGACY_SCORES_KEY); } catch (e) { /* ignore */ }
   }
 
   window.Store = {

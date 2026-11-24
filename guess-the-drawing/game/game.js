@@ -3,14 +3,15 @@
 (function () {
   "use strict";
 
-  // Every player gets the same rounds in the same order (fair scoreboard): the first ROUNDS_PER_GAME
-  // words of PLAYLIST that exist. Rounds not listed come after, in rounds.js order.
-  var PLAYLIST = ["shark", "wolf", "crocodile", "rat", "giraffe"];
+  // Each game picks ROUNDS_PER_GAME random distinct rounds (random order) from the eligible pool.
+  // Eligible = the AI never gets it, or gets it no earlier than MIN_AI_SECONDS (otherwise the player has no chance).
   var ROUNDS_PER_GAME = 3;
-  var GRACE_SECONDS = 6;      // time left for the player after the AI gets it (or the video ends)
+  var MIN_AI_SECONDS = 6;
+  var GRACE_SECONDS = 6;      // time left for the player after the AI gets it (AI rounds only)
   var MISS_PENALTY = 10;      // added to a missed round
   var PAUSE_LIMIT_MS = 8000;  // a pause without a submitted guess resumes the video
   var RESULT_AUTO_MS = 5000;
+  var FLASH_MS = 900;         // "Correct!" overlay before the result screen
 
   var $ = function (id) { return document.getElementById(id); };
   var video = $("video");
@@ -24,11 +25,18 @@
     return (window.DEMO_ROUNDS || []).map(function (r) { return Object.assign({}, r, { src: r.video }); });
   }
 
-  function ordered(pool) {
-    var pos = function (r) { var i = PLAYLIST.indexOf(r.word); return i < 0 ? PLAYLIST.length : i; };
-    return pool.map(function (r, i) { return { r: r, i: i }; })
-      .sort(function (a, b) { return pos(a.r) - pos(b.r) || a.i - b.i; })
-      .map(function (x) { return x.r; });
+  // Random distinct rounds in random order (Fisher-Yates) from the eligible pool.
+  function pickRounds(pool) {
+    var eligible = pool.filter(function (x) { return x.aiCorrectAt == null || x.aiCorrectAt >= MIN_AI_SECONDS; });
+    if (!eligible.length) {
+      console.warn("No round has aiCorrectAt null or >= " + MIN_AI_SECONDS + "; using all rounds.");
+      eligible = pool.slice();
+    }
+    for (var i = eligible.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = eligible[i]; eligible[i] = eligible[j]; eligible[j] = tmp;
+    }
+    return eligible.slice(0, ROUNDS_PER_GAME);
   }
 
   // ---------- answer matching ----------
@@ -71,10 +79,16 @@
   var game = null;   // { name, rounds, index, results }
   var r = null;      // current round state
   var latestScoreId = null;
-  var introTimer = null, finalTimer = null;
+  var introTimer = null, finalTimer = null, flashTimer = null, wrongTimer = null;
   var FINAL_AUTO_MS = 20000;  // final screen moves on to the sign-up form by itself
 
   function fmt(t) { return t.toFixed(1) + " s"; }
+  function round1(v) { return Math.round(v * 10) / 10; }
+  // Signed margin vs the AI: "-4.2 s" (beat it), "+3.0 s" (lost), "0.0 s".
+  function fmtSigned(v) {
+    v = round1(v);
+    return (v > 0 ? "+" : "") + v.toFixed(1) + " s";
+  }
 
   function renderBoard() {
     var list = $("scoreboard"), top = window.Store.topScores(10);
@@ -82,9 +96,18 @@
     top.forEach(function (s, i) {
       var li = document.createElement("li");
       if (s.id === latestScoreId) li.className = "latest";
-      [["rank", (i + 1) + "."], ["name", s.name], ["total", fmt(s.total)]].forEach(function (c) {
+      [["rank", (i + 1) + "."], ["name", s.name], ["marks", ""], ["total", fmtSigned(s.total)]].forEach(function (c) {
         var span = document.createElement("span");
-        span.className = c[0]; span.textContent = c[1]; li.appendChild(span);
+        span.className = c[0]; span.textContent = c[1];
+        if (c[0] === "marks") {
+          (s.rounds || []).forEach(function (x) {
+            var m = document.createElement("i");
+            m.className = x.beat ? "win" : "lose";
+            m.textContent = x.beat ? "\u2713" : "\u2022";
+            span.appendChild(m);
+          });
+        }
+        li.appendChild(span);
       });
       list.appendChild(li);
     });
@@ -102,6 +125,9 @@
     clearInterval(introTimer);
     clearTimeout(resultTimer);
     clearTimeout(finalTimer);
+    clearTimeout(flashTimer);
+    clearTimeout(wrongTimer);
+    $("correct-flash").hidden = true;
     game = null;
     renderBoard();
     show("start");
@@ -115,7 +141,7 @@
     if (!name) return;
     var pool = loadPool();
     if (!pool.length) { $("board-empty").textContent = "No rounds found. Run prerender first."; return; }
-    game = { name: name, rounds: ordered(pool).slice(0, ROUNDS_PER_GAME), index: 0, results: [] };
+    game = { name: name, rounds: pickRounds(pool), index: 0, results: [] };
     nextRound();
   });
 
@@ -152,7 +178,7 @@
     $("paused-tag").hidden = true;
     $("guess").value = "";
     $("hud-round").textContent = "Round " + (game.index + 1) + "/" + game.rounds.length;
-    $("hud-total").textContent = "Total " + fmt(totalSoFar());
+    $("hud-total").textContent = "Margin " + fmtSigned(totalSoFar());
     $("hud-clock").textContent = fmt(0);
   }
 
@@ -175,7 +201,7 @@
   }
 
   function totalSoFar() {
-    return game ? game.results.reduce(function (s, x) { return s + x.time; }, 0) : 0;
+    return game ? round1(game.results.reduce(function (s, x) { return s + x.margin; }, 0)) : 0;
   }
 
   // ---------- per-frame update ----------
@@ -185,12 +211,16 @@
     $("hud-clock").textContent = fmt(t);
     updateAi(t);
 
+    // AI rounds: grace window once the AI gets it. AI-never rounds: no grace, the video just runs out.
     var aiAt = r.round.aiCorrectAt;
-    if (r.phase === "playing" && ((aiAt != null && t >= aiAt) || video.ended)) startGrace(t);
+    if (r.phase === "playing") {
+      if (aiAt != null && (t >= aiAt || video.ended)) startGrace(t);
+      else if (aiAt == null && video.ended) return endRound(false, t);
+    }
 
     if (r.phase === "grace") {
       var left = GRACE_SECONDS - (performance.now() - r.graceStart) / 1000;
-      if (left <= 0) return endRound(false);
+      if (left <= 0) return endRound(false, t);
       $("grace-fill").style.transform = "scaleX(" + Math.max(0, left / GRACE_SECONDS) + ")";
       $("grace-left").textContent = left.toFixed(1) + " s left";
     }
@@ -262,12 +292,13 @@
     var g = guessInput.value.trim();
     guessInput.value = "";
     if (!g) return resume();
-    if (isMatch(g, r.round)) return endRound(true);
+    if (isMatch(g, r.round)) return solveRound();
     var li = document.createElement("li");
     li.textContent = g;
     $("my-guesses").appendChild(li);
-    var form = $("guess-form");
-    form.classList.remove("shake"); void form.offsetWidth; form.classList.add("shake");
+    guessInput.classList.remove("wrong"); void guessInput.offsetWidth; guessInput.classList.add("wrong");
+    clearTimeout(wrongTimer);
+    wrongTimer = setTimeout(function () { guessInput.classList.remove("wrong"); }, 600);
     resume();
   });
 
@@ -283,20 +314,57 @@
   // ---------- results ----------
   var resultTimer = null;
 
-  function endRound(solved) {
-    var t = video.currentTime;
+  // Correct guess: freeze the round, flash "Correct!" over the stage, then show the result.
+  function solveRound() {
+    var t = round1(video.currentTime);
     stopRound();
-    var time = solved ? t : Math.min(video.duration || t, r.graceVideoTime + GRACE_SECONDS) + MISS_PENALTY;
-    time = Math.round(time * 10) / 10;
-    game.results.push({ word: r.round.word, time: time, solved: solved });
+    $("flash-time").textContent = fmt(t);
+    $("correct-flash").hidden = false;
+    flashTimer = setTimeout(function () {
+      $("correct-flash").hidden = true;
+      endRound(true, t);
+    }, FLASH_MS);
+  }
 
+  // Margin vs the AI. aiTime = aiCorrectAt, or the video length when the AI never gets it.
+  // Player time: video time of the correct guess. If missed: end of the grace window (capped at the
+  // video length) + MISS_PENALTY, or video length + MISS_PENALTY when the AI never got it.
+  // margin = player time - aiTime (negative = beat the AI).
+  function endRound(solved, t) {
+    stopRound();
+    var dur = isFinite(video.duration) ? video.duration : t;
     var ai = r.round.aiCorrectAt;
-    $("result-eyebrow").textContent = solved
-      ? (ai == null || t < ai ? "You beat the AI" : "Correct, but the AI was faster")
-      : "Missed it. +" + MISS_PENALTY + " s penalty";
+    var aiNever = ai == null;
+    var aiTime = round1(aiNever ? dur : ai);
+    var playerTime = solved ? round1(t) : null;
+    var effective = solved ? playerTime
+      : round1((aiNever ? dur : Math.min(dur, r.graceVideoTime + GRACE_SECONDS)) + MISS_PENALTY);
+    var margin = round1(effective - aiTime);
+    var beat = solved && margin < 0;
+    game.results.push({ word: r.round.word, playerTime: playerTime, aiTime: aiTime, margin: margin, beat: beat });
+
+    var abs = fmt(Math.abs(margin));
+    var cls, text, sub;
+    if (aiNever) {
+      text = "The AI never got it";
+      cls = solved ? "ok" : "muted";
+      sub = solved ? "You got it, " + fmtSigned(margin) + " vs the video length"
+                   : "You missed it too. +" + MISS_PENALTY + " s penalty";
+    } else if (solved && margin < 0) {
+      text = "You beat the AI by " + abs; cls = "ok"; sub = "Correct";
+    } else if (solved && margin === 0) {
+      text = "Dead heat with the AI"; cls = "muted"; sub = "Correct";
+    } else if (solved) {
+      text = "The AI won by " + abs; cls = "ai"; sub = "Correct, but too slow";
+    } else {
+      text = "Missed: the AI won by " + abs; cls = "ai"; sub = "+" + MISS_PENALTY + " s penalty";
+    }
+    $("result-headline").textContent = text;
+    $("result-headline").className = "result-headline " + cls;
+    $("result-eyebrow").textContent = sub;
     $("result-word").textContent = r.round.word;
-    $("result-you").textContent = solved ? fmt(time) : "missed";
-    $("result-ai").textContent = ai == null ? "never" : fmt(ai);
+    $("result-you").textContent = solved ? fmt(playerTime) : "missed";
+    $("result-ai").textContent = aiNever ? "never" : fmt(aiTime);
     show("result");
     $("result-next").focus();
     resultTimer = setTimeout(advance, RESULT_AUTO_MS);
@@ -310,10 +378,14 @@
   $("result-next").addEventListener("click", advance);
 
   function finish() {
-    var total = Math.round(totalSoFar() * 10) / 10;
+    var total = totalSoFar();
+    var beaten = game.results.filter(function (x) { return x.beat; }).length;
     var res = window.Store.addScore({ name: game.name, total: total, rounds: game.results });
     latestScoreId = res.entry.id;
-    $("final-total").textContent = fmt(total);
+    $("final-eyebrow").textContent = "You beat the AI " + beaten + " of " + game.results.length;
+    var tot = $("final-total");
+    tot.textContent = fmtSigned(total);
+    tot.className = "final-total " + (total < 0 ? "ok" : total > 0 ? "ai" : "");
     var rank = $("final-rank");
     rank.textContent = res.rank === 1 ? "New #1 on the scoreboard!" : "Place " + res.rank + " on the scoreboard";
     rank.className = "final-rank" + (res.rank === 1 ? " first" : "");
@@ -321,7 +393,12 @@
     list.innerHTML = "";
     game.results.forEach(function (x) {
       var li = document.createElement("li");
-      li.textContent = x.word + ": " + (x.solved ? fmt(x.time) : "missed");
+      li.className = x.beat ? "ok" : "ai";
+      var w = document.createElement("span");
+      w.className = "word"; w.textContent = x.word + (x.playerTime == null ? " (missed)" : "");
+      var m = document.createElement("span");
+      m.className = "margin"; m.textContent = fmtSigned(x.margin);
+      li.appendChild(w); li.appendChild(m);
       list.appendChild(li);
     });
     show("final");
