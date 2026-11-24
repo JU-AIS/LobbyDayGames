@@ -29,15 +29,23 @@ Guesses do not need perfect spelling.
 
 ## AI guesses (pre-rendered)
 
-The AI guesses are produced once, before the event, and saved as JSON next to each video.
+The AI guesses are produced once, before the event, and committed, so every player sees exactly the same AI.
 
-1. Extract one frame per second from the video (ffmpeg).
+1. Take one frame every 3 seconds (t = 3, 6, 9, ...).
 2. Send each frame to Claude Haiku 5.5 (`claude-haiku-5-5`) asking for a one-word guess of what is being drawn. The model is not given the word list.
-3. Save the result as `guesses.json`: `[{ "t": 3, "guess": "house" }, ...]`.
+3. Save the result as `guesses.json`: `[{ "t": 3, "guess": "house" }, ...]`. The AI counts as right at its first guess that matches the word or a synonym (`aiCorrectAt`).
+4. Write `rounds/rounds.js` with all rounds, which the game loads.
+
+How to run (in `prerender/`):
+
+1. `npm install`
+2. Create `.env` with `ANTHROPIC_API_KEY=sk-ant-...` (ignored by git, never commit it).
+3. `npm start` runs every round that has no `guesses.json` yet. `npm start -- --force` re-runs all, `npm start -- ../rounds/shark` runs one, `npm start -- --dry` shows what would be sent without calling the API.
+4. Commit the new `guesses.json` files and `rounds/rounds.js`.
 
 Cost is negligible (well under 1 USD for all videos). The game only reads the JSON, so the model can be swapped later (e.g. a local vision model) without touching the game.
 
-Risk to check on the first recording: if Haiku guesses too early, the player has no chance. Mitigations: harder words, or only count the AI as correct after the same guess on two frames in a row.
+Risk: if Haiku guesses too early, the player has no chance. Prerender prints `TOO EARLY?` when the first right guess comes in the first 30 % of the video. Fix: redraw with the recognisable part last, or pick a harder word.
 
 ## Recording the videos
 
@@ -59,7 +67,7 @@ Keep each video to a few MB. If one is big, shrink it with ffmpeg (no audio, 720
 ffmpeg -i big.mp4 -an -vf scale=-2:720 -c:v libx264 -crf 28 -pix_fmt yuv420p -movflags +faststart video.mp4
 ```
 
-ffmpeg is also needed by prerender. On Windows: `winget install Gyan.FFmpeg`, then open a new terminal.
+Prerender brings its own ffmpeg (`ffmpeg-static`), so `npm install` is enough for it. The command above needs a system ffmpeg (`winget install Gyan.FFmpeg`).
 
 ## Structure
 

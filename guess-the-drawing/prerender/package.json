@@ -5,6 +5,7 @@
     "start": "node --env-file-if-exists=.env prerender.mjs"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^1.13.0"
+    "@anthropic-ai/sdk": "^1.13.0",
+    "ffmpeg-static": "^5.2.0"
   }
 }
