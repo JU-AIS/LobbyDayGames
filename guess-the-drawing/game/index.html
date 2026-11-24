@@ -9,15 +9,22 @@
 </head>
 <body>
   <header class="topbar">
-    <span class="brand">JU AIS</span>
-    <span id="demo-flag" class="demo-flag" hidden>Demo rounds</span>
+    <span class="brand">
+      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2c.6 4.8 3.2 7.4 8 8-4.8.6-7.4 3.2-8 8-.6-4.8-3.2-7.4-8-8 4.8-.6 7.4-3.2 8-8z" transform="translate(0 2)"/></svg>
+      JU AIS
+    </span>
+    <span class="topbar-right">
+      <span id="demo-flag" class="demo-flag" hidden>Demo rounds</span>
+      <span>Lobby day</span>
+    </span>
   </header>
 
   <!-- Start: name + scoreboard -->
   <main id="screen-start" class="screen start">
     <section class="intro">
-      <h1>Guess the<br>Drawing</h1>
-      <p class="lede">Someone is drawing. The AI is guessing. Type the word before the AI gets it.</p>
+      <p class="eyebrow">Jönköping University AI Student Association</p>
+      <h1>Guess the<br>drawing.</h1>
+      <p class="lede">Someone is drawing. An AI is guessing. Can you name it before the AI does?</p>
       <ol class="rules">
         <li>Start typing to pause the video.</li>
         <li>Press Enter to guess. Wrong guesses keep the video going.</li>
@@ -33,7 +40,7 @@
       </form>
     </section>
     <aside class="board">
-      <h2>Scoreboard</h2>
+      <h2>Scoreboard <small>Prize for #1</small></h2>
       <ol id="scoreboard" class="scoreboard"></ol>
       <p id="board-empty" class="muted">No scores yet. Be the first.</p>
     </aside>
