@@ -69,11 +69,16 @@
       </div>
       <div class="canvas-frame">
         <video id="video" muted playsinline preload="auto"></video>
-        <div id="paused-tag" class="paused-tag" hidden>Paused</div>
+        <div id="grace-band" class="grace-band" hidden>
+          <div class="grace-band-bar"><span id="grace-band-fill"></span></div>
+          <p class="grace-band-label" id="grace-band-label">6.0 s</p>
+        </div>
+        <div id="paused-tag" class="paused-tag" hidden><span>Paused</span></div>
       </div>
       <div class="ai-panel" id="ai-panel">
         <p class="ai-label">AI thinks</p>
         <p class="ai-guess" id="ai-guess">...</p>
+        <p class="ai-sub" id="ai-sub" hidden></p>
         <div id="grace" class="grace" hidden>
           <p class="grace-title">The AI got it</p>
           <div class="grace-bar"><span id="grace-fill"></span></div>

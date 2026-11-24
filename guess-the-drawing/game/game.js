@@ -175,10 +175,15 @@
     $("ai-history").innerHTML = "";
     $("my-guesses").innerHTML = "";
     $("grace").hidden = true;
+    $("grace-band").hidden = true;
+    $("ai-sub").hidden = true;
+    $("ai-panel").classList.remove("hit");
     $("paused-tag").hidden = true;
     $("guess").value = "";
     $("hud-round").textContent = "Round " + (game.index + 1) + "/" + game.rounds.length;
-    $("hud-total").textContent = "Margin " + fmtSigned(totalSoFar());
+    var tot = totalSoFar();
+    $("hud-total").textContent = "Margin " + fmtSigned(tot);
+    $("hud-total").className = tot < 0 ? "ok" : tot > 0 ? "ai" : "";
     $("hud-clock").textContent = fmt(0);
   }
 
@@ -223,11 +228,13 @@
       if (left <= 0) return endRound(false, t);
       $("grace-fill").style.transform = "scaleX(" + Math.max(0, left / GRACE_SECONDS) + ")";
       $("grace-left").textContent = left.toFixed(1) + " s left";
+      $("grace-band-fill").style.transform = "scaleX(" + Math.max(0, left / GRACE_SECONDS) + ")";
+      $("grace-band-label").textContent = left.toFixed(1) + " s";
     }
     r.raf = requestAnimationFrame(tick);
   }
 
-  function mask(word) { return word.replace(/\S/g, "●"); }
+  function letterCount(word) { return word.replace(/[^A-Za-z\u00C0-\u024F]/g, "").length; }
 
   function updateAi(t) {
     var cur = null;
@@ -236,17 +243,25 @@
     if (r.lastShown && r.lastShown.guess !== "nothing") addHistory(r.lastShown.guess);
     r.lastShown = cur;
     var el = $("ai-guess"), hit = isMatch(cur.guess, r.round);
-    el.textContent = cur.guess === "nothing" ? "..." : hit ? mask(r.round.word) : cur.guess;
+    el.textContent = cur.guess === "nothing" ? "..." : hit ? "Got it!" : cur.guess;
     el.className = "ai-guess" + (hit ? " masked" : "");
-    void el.offsetWidth; // restart the pop animation
+    void el.offsetWidth; // restart the slide-in animation
     el.classList.add("pop");
+    var sub = $("ai-sub");
+    sub.hidden = !hit;
+    if (hit) sub.textContent = letterCount(r.round.word) + " letters";
+    if (hit && !r.aiHit) {  // pulse the panel once, when the AI first gets it
+      var panel = $("ai-panel");
+      panel.classList.remove("hit"); void panel.offsetWidth; panel.classList.add("hit");
+    }
+    r.aiHit = hit;
   }
 
   function addHistory(g) {
     if (r.history[r.history.length - 1] === g) return;
     r.history.push(g);
     var li = document.createElement("li");
-    li.textContent = isMatch(g, r.round) ? mask(r.round.word) : g;
+    li.textContent = isMatch(g, r.round) ? "Got it" : g;
     $("ai-history").prepend(li);
     while ($("ai-history").children.length > 8) $("ai-history").lastChild.remove();
   }
@@ -257,6 +272,7 @@
     r.graceVideoTime = t;
     var aiGotIt = r.round.aiCorrectAt != null && t >= r.round.aiCorrectAt;
     $("grace").hidden = false;
+    $("grace-band").hidden = false;
     document.querySelector(".grace-title").textContent = aiGotIt ? "The AI got it" : "Drawing finished";
   }
 
