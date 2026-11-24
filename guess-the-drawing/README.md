@@ -92,6 +92,19 @@ Open `game/index.html` in Chrome (double-click works, no server needed).
 - Scores and sign-ups live in the browser's localStorage on that laptop. Export before clearing browser data.
 - Commit `rounds/rounds.js` and the round videos, otherwise the game has no rounds on the lobby laptop. Keep each video to a few MB; above 50 MB we need another plan.
 
+## Web version
+
+URL: https://juais.se/LobbyDayGames/guess-the-drawing/game/
+
+The same game also runs over http(s) on GitHub Pages. It switches to web mode automatically when the page is not opened from `file://`:
+
+- Sign-ups are sent to the JU AIS Google Sheet through a Google Apps Script web app (email only if consent is ticked). Nothing is stored locally.
+- No staff panel (Ctrl+Shift+A does nothing).
+- The scoreboard is per device ("Your scores on this device") and the prize wording is hidden.
+- The pages carry `noindex`, so search engines should not list them.
+
+The offline version is unchanged: open `game/index.html` from disk. The web version deploys automatically on every push to `main` via GitHub Pages.
+
 ## Status
 
 Game playable with demo rounds (branch `feat/gtd-game`). Prerender on `feat/gtd-prerender`, not yet run against Haiku. Target: first draft on GitHub and Discord by 2026-11-25, used at the lobby days 2026-11-27 (JIBS) and 2026-11-30 (JTH).

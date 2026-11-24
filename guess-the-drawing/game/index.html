@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
   <title>Guess the Drawing</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
@@ -30,7 +31,7 @@
         <li>Start typing to pause the video.</li>
         <li>Press Enter to guess. Wrong guesses keep the video going.</li>
         <li>When the AI gets it, you have 6 seconds left.</li>
-        <li>Lowest total time wins a prize.</li>
+        <li id="rule-prize">Lowest total time wins a prize.</li>
       </ol>
       <form id="start-form" class="start-form" autocomplete="off">
         <label for="player-name">Your name (shown on the scoreboard)</label>
@@ -41,7 +42,7 @@
       </form>
     </section>
     <aside class="board">
-      <h2>Scoreboard <small>Prize for #1</small></h2>
+      <h2 id="board-title">Scoreboard <small>Prize for #1</small></h2>
       <ol id="scoreboard" class="scoreboard"></ol>
       <p id="board-empty" class="muted">No scores yet. Be the first.</p>
     </aside>

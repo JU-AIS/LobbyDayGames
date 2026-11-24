@@ -1,6 +1,9 @@
 /* storage.js - localStorage-backed score and sign-up store (window.Store).
    Every storage access is guarded; an in-memory copy keeps the game working
    if localStorage is blocked or full. */
+// Web mode: true when served over http(s) (GitHub Pages), false when opened from file://.
+window.GTD_WEB = window.location.protocol !== 'file:';
+
 (function () {
   'use strict';
 

@@ -91,6 +91,12 @@
     $("board-empty").hidden = top.length > 0;
   }
 
+  // Web mode (http/https): neutral wording, no prize and no shared scoreboard.
+  if (window.GTD_WEB) {
+    $("board-title").textContent = "Your scores on this device";
+    $("rule-prize").hidden = true;
+  }
+
   function goStart() {
     stopRound();
     clearInterval(introTimer);
@@ -350,6 +356,7 @@
     $("admin").hidden = false;
   }
   document.addEventListener("keydown", function (e) {
+    if (window.GTD_WEB) return;  // staff panel is offline-only
     if (e.ctrlKey && e.shiftKey && (e.key === "A" || e.key === "a")) {
       e.preventDefault();
       if ($("admin").hidden) openAdmin(); else $("admin").hidden = true;

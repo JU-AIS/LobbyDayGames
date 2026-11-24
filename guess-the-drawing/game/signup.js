@@ -14,6 +14,10 @@
   var THANKS_MS = 1500;
   var INTEREST = [['yes', 'Yes'], ['maybe', 'Maybe'], ['no', 'No']];
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // Web mode only: sign-ups go to the JU AIS Google Sheet through an Apps Script web app.
+  var SIGNUP_URL = 'https://script.google.com/macros/s/AKfycbzIhSJeSwzWqRifwBnRoDcaLRG04IkezxED6LhklqGra5bZIe729yHHGNLWx6eDTdLMlg/exec';
+  var CONSENT_TEXT = 'I agree that JU AIS may store my email to contact me about joining. It is deleted after recruitment.';
+  var CONSENT_TEXT_WEB = 'I agree that JU AIS may store my email in a Google Sheet to contact me about joining. It is deleted after recruitment.';
 
   var cleanupPrev = null; // tears down a form that is still open
 
@@ -95,7 +99,7 @@
       el('div', { class: 'su-field' }, [
         el('label', { class: 'su-check', for: 'su-consent' }, [
           consentIn,
-          el('span', { text: 'I agree that JU AIS may store my email to contact me about joining. It is deleted after recruitment.' })
+          el('span', { text: window.GTD_WEB ? CONSENT_TEXT_WEB : CONSENT_TEXT })
         ]),
         consentErr
       ]),
@@ -139,13 +143,20 @@
     function send() {
       if (finished || !validate()) return;
       var chosen = interestIns.filter(function (r) { return r.checked; })[0];
-      window.Store.addSignup({
+      var entry = {
         name: nameIn.value.trim(),
         email: emailIn.value.trim(),
         consent: consentIn.checked,
         departments: deptBoxes.filter(function (c) { return c.checked; }).map(function (c) { return c.value; }),
         interested: chosen ? chosen.value : ''
-      });
+      };
+      if (window.GTD_WEB) {
+        // Fire and forget: text/plain avoids a CORS preflight; "Thanks!" does not wait for the response.
+        var payload = { name: entry.name, email: entry.consent ? entry.email : '', consent: entry.consent, departments: entry.departments, interested: entry.interested };
+        fetch(SIGNUP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }).catch(function (e) { console.warn('Sign-up failed', e); });
+      } else {
+        window.Store.addSignup(entry);
+      }
       clearTimeout(idleTimer);
       sendBtn.disabled = skipBtn.disabled = true;
       root.innerHTML = '';
