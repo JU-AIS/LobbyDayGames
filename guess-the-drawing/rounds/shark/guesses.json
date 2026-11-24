@@ -1,0 +1,14 @@
+[
+  {
+    "t": 3,
+    "guess": "boat"
+  },
+  {
+    "t": 6,
+    "guess": "snake"
+  },
+  {
+    "t": 9,
+    "guess": "shark"
+  }
+]

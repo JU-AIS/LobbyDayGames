@@ -3,6 +3,9 @@
 (function () {
   "use strict";
 
+  // Every player gets the same rounds in the same order (fair scoreboard): the first ROUNDS_PER_GAME
+  // words of PLAYLIST that exist. Rounds not listed come after, in rounds.js order.
+  var PLAYLIST = ["shark", "wolf", "crocodile", "rat", "giraffe"];
   var ROUNDS_PER_GAME = 3;
   var GRACE_SECONDS = 6;      // time left for the player after the AI gets it (or the video ends)
   var MISS_PENALTY = 10;      // added to a missed round
@@ -21,12 +24,11 @@
     return (window.DEMO_ROUNDS || []).map(function (r) { return Object.assign({}, r, { src: r.video }); });
   }
 
-  function shuffle(a) {
-    a = a.slice();
-    for (var i = a.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t;
-    }
-    return a;
+  function ordered(pool) {
+    var pos = function (r) { var i = PLAYLIST.indexOf(r.word); return i < 0 ? PLAYLIST.length : i; };
+    return pool.map(function (r, i) { return { r: r, i: i }; })
+      .sort(function (a, b) { return pos(a.r) - pos(b.r) || a.i - b.i; })
+      .map(function (x) { return x.r; });
   }
 
   // ---------- answer matching ----------
@@ -107,7 +109,7 @@
     if (!name) return;
     var pool = loadPool();
     if (!pool.length) { $("board-empty").textContent = "No rounds found. Run prerender first."; return; }
-    game = { name: name, rounds: shuffle(pool).slice(0, ROUNDS_PER_GAME), index: 0, results: [] };
+    game = { name: name, rounds: ordered(pool).slice(0, ROUNDS_PER_GAME), index: 0, results: [] };
     nextRound();
   });
 

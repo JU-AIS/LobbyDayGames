@@ -1,0 +1,22 @@
+[
+  {
+    "t": 3,
+    "guess": "hill"
+  },
+  {
+    "t": 6,
+    "guess": "cat"
+  },
+  {
+    "t": 9,
+    "guess": "horse"
+  },
+  {
+    "t": 12,
+    "guess": "cat"
+  },
+  {
+    "t": 15,
+    "guess": "dog"
+  }
+]

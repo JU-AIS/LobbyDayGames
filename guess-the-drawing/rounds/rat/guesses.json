@@ -1,0 +1,50 @@
+[
+  {
+    "t": 3,
+    "guess": "umbrella"
+  },
+  {
+    "t": 6,
+    "guess": "dinosaur"
+  },
+  {
+    "t": 9,
+    "guess": "dinosaur"
+  },
+  {
+    "t": 12,
+    "guess": "dinosaur"
+  },
+  {
+    "t": 15,
+    "guess": "dog"
+  },
+  {
+    "t": 18,
+    "guess": "dog"
+  },
+  {
+    "t": 21,
+    "guess": "dog"
+  },
+  {
+    "t": 24,
+    "guess": "dog"
+  },
+  {
+    "t": 27,
+    "guess": "dog"
+  },
+  {
+    "t": 30,
+    "guess": "dog"
+  },
+  {
+    "t": 33,
+    "guess": "dog"
+  },
+  {
+    "t": 36,
+    "guess": "cat"
+  }
+]

@@ -39,7 +39,7 @@ The AI guesses are produced once, before the event, and committed, so every play
 How to run (in `prerender/`):
 
 1. `npm install`
-2. Create `.env` with `ANTHROPIC_API_KEY=sk-ant-...` (ignored by git, never commit it).
+2. Optional: create `.env` with `ANTHROPIC_API_KEY=sk-ant-...` (ignored by git, never commit it). Without a key, prerender uses the Claude Code CLI (`claude -p`) with your normal Claude login.
 3. `npm start` runs every round that has no `guesses.json` yet. `npm start -- --force` re-runs all, `npm start -- ../rounds/shark` runs one, `npm start -- --dry` shows what would be sent without calling the API.
 4. Commit the new `guesses.json` files and `rounds/rounds.js`.
 
@@ -86,7 +86,7 @@ Scoreboard and sign-up data are stored locally in the browser and exported to CS
 Open `game/index.html` in Chrome (double-click works, no server needed).
 
 - With `rounds/rounds.js` present (written by `prerender/`), the game uses those rounds. Without it, it falls back to three demo rounds in `game/demo/` and shows a "Demo rounds" tag.
-- 3 random rounds per game. Settings are at the top of `game/game.js` (rounds per game, 6 s grace, 10 s miss penalty, 8 s max pause).
+- Every player gets the same 3 rounds in the same order, so the scoreboard is fair: the first words of `PLAYLIST` at the top of `game/game.js` (currently shark, wolf, crocodile). Other settings there: rounds per game, 6 s grace, 10 s miss penalty, 8 s max pause.
 - A pause without a submitted guess resumes the video after 8 seconds, so nobody can stop the clock forever. Esc also resumes.
 - Staff panel: **Ctrl+Shift+A**. Shows how many scores and sign-ups are stored, exports both as CSV, and can clear all data.
 - Scores and sign-ups live in the browser's localStorage on that laptop. Export before clearing browser data.
