@@ -71,10 +71,10 @@ Drawn by Oskar and Victor in Paint, recorded with the Windows Snipping Tool. Agr
 
 Good words: concrete objects that are recognisable halfway through and have one obvious name (bicycle, guitar, lighthouse, snowman, umbrella). Avoid words that need text or colour to tell apart.
 
-Keep each video to a few MB. If one is big, shrink it with ffmpeg (no audio, 720p):
+Keep each video to a few MB, and make width and height multiples of 16 (otherwise some browsers draw a dark line at the edge). This ffmpeg command does both: no audio, at most 720p, padded with white:
 
 ```
-ffmpeg -i big.mp4 -an -vf scale=-2:720 -c:v libx264 -crf 28 -pix_fmt yuv420p -movflags +faststart video.mp4
+ffmpeg -i big.mp4 -an -vf "scale=-2:'min(720,ih)',pad=ceil(iw/16)*16:ceil(ih/16)*16:0:0:white" -c:v libx264 -crf 28 -pix_fmt yuv420p -movflags +faststart video.mp4
 ```
 
 Prerender brings its own ffmpeg (`ffmpeg-static`), so `npm install` is enough for it. The command above needs a system ffmpeg (`winget install Gyan.FFmpeg`).
