@@ -69,6 +69,8 @@
   var game = null;   // { name, rounds, index, results }
   var r = null;      // current round state
   var latestScoreId = null;
+  var introTimer = null, finalTimer = null;
+  var FINAL_AUTO_MS = 20000;  // final screen moves on to the sign-up form by itself
 
   function fmt(t) { return t.toFixed(1) + " s"; }
 
@@ -89,6 +91,9 @@
 
   function goStart() {
     stopRound();
+    clearInterval(introTimer);
+    clearTimeout(resultTimer);
+    clearTimeout(finalTimer);
     game = null;
     renderBoard();
     show("start");
@@ -113,10 +118,11 @@
     $("intro-count").textContent = count;
     show("intro");
     prepareRound(game.rounds[game.index]);
-    var iv = setInterval(function () {
+    clearInterval(introTimer);
+    introTimer = setInterval(function () {
       count--;
       if (count > 0) { $("intro-count").textContent = count; return; }
-      clearInterval(iv);
+      clearInterval(introTimer);
       startRound();
     }, 700);
   }
@@ -260,6 +266,7 @@
   video.addEventListener("error", function () {
     if (!r || r.done || !game) return;
     console.error("Could not load video:", r.round.src);
+    clearInterval(introTimer);
     stopRound();
     game.rounds.splice(game.index, 1); // skip broken round, not counted
     nextRound();
@@ -311,12 +318,26 @@
     });
     show("final");
     $("final-next").focus();
+    finalTimer = setTimeout(toSignup, FINAL_AUTO_MS);
   }
 
-  $("final-next").addEventListener("click", function () {
+  $("final-next").addEventListener("click", toSignup);
+
+  function toSignup() {
+    clearTimeout(finalTimer);
+    if (!game) return;
     var name = game.name;
     show("signup");
     window.Signup.render($("screen-signup"), { name: name, onDone: goStart });
+  }
+
+  // Kiosk: if the player clicks the video or anywhere else mid-round, typing still goes to the guess box.
+  document.addEventListener("keydown", function (e) {
+    if ($("screen-play").hidden || document.activeElement === guessInput || e.ctrlKey || e.altKey || e.metaKey) return;
+    if (e.key.length === 1 || e.key === "Enter") guessInput.focus();
+  });
+  $("screen-play").addEventListener("click", function (e) {
+    if (e.target.tagName !== "BUTTON") guessInput.focus();
   });
 
   // ---------- staff panel (Ctrl+Shift+A) ----------
