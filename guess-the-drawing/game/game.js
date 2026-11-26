@@ -39,18 +39,42 @@
     return (window.DEMO_ROUNDS || []).map(function (r) { return Object.assign({}, r, { src: r.video }); });
   }
 
-  // Random distinct rounds in random order (Fisher-Yates) from the eligible pool.
+  // Videos from the last RECENT_GAMES games are not picked again, so people watching cannot learn the answers.
+  var RECENT_GAMES = 2;
+  var RECENT_KEY = "gtd.v1.recent";
+  function readRecent() {
+    try { var v = JSON.parse(localStorage.getItem(RECENT_KEY)); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+  }
+  function saveRecent(words) {
+    var list = readRecent().concat([words]).slice(-RECENT_GAMES);
+    try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch (e) { /* storage blocked: no repeat guard */ }
+  }
+
+  function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  // Random distinct rounds in random order from the eligible pool, skipping recently played videos.
+  // If too few are left, the oldest blocked game is released first.
   function pickRounds(pool) {
     var eligible = pool.filter(function (x) { return x.aiCorrectAt == null || x.aiCorrectAt >= MIN_AI_SECONDS; });
     if (!eligible.length) {
       console.warn("No round has aiCorrectAt null or >= " + MIN_AI_SECONDS + "; using all rounds.");
       eligible = pool.slice();
     }
-    for (var i = eligible.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var tmp = eligible[i]; eligible[i] = eligible[j]; eligible[j] = tmp;
+    var recent = readRecent(), fresh = eligible;
+    for (var k = 0; k <= recent.length; k++) {
+      var blocked = [].concat.apply([], recent.slice(k));
+      fresh = eligible.filter(function (x) { return blocked.indexOf(x.word) < 0; });
+      if (fresh.length >= Math.min(ROUNDS_PER_GAME, eligible.length)) break;
     }
-    return eligible.slice(0, ROUNDS_PER_GAME);
+    var picked = shuffle(fresh.slice()).slice(0, ROUNDS_PER_GAME);
+    saveRecent(picked.map(function (x) { return x.word; }));
+    return picked;
   }
 
   // ---------- answer matching ----------

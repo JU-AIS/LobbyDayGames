@@ -9,7 +9,7 @@ Runs fully offline on one laptop. No camera, no network and no API calls during 
 ## Gameplay
 
 1. The player enters a name (shown on the scoreboard).
-2. Each game is 3 random rounds, picked from the eligible rounds in random order (see Scoring). Nobody is guaranteed the same rounds.
+2. Each game is 3 random rounds, picked from the eligible rounds in random order (see Scoring). Videos from the last 2 games on the same device are skipped, so people watching in the queue cannot learn the answers (`RECENT_GAMES` in `game/game.js`).
 3. A round starts: the drawing video plays and the AI's guesses appear on screen.
 4. The player can pause at any time and type a guess. Wrong guess: the input shakes and the video continues.
 5. Correct guess: a green "Correct!" flash with the player's time, then the round result ("You beat the AI by 3.1 s" or "The AI won by 2.0 s").
