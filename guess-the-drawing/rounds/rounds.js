@@ -11,10 +11,14 @@ window.ROUNDS = [
     "guesses": [
       {
         "t": 3,
+        "guess": "apple"
+      },
+      {
+        "t": 6,
         "guess": "bird"
       }
     ],
-    "aiCorrectAt": 3
+    "aiCorrectAt": 6
   },
   {
     "word": "cat",
@@ -70,10 +74,22 @@ window.ROUNDS = [
     "guesses": [
       {
         "t": 3,
+        "guess": "elephant"
+      },
+      {
+        "t": 6,
+        "guess": "elephant"
+      },
+      {
+        "t": 9,
+        "guess": "giraffe"
+      },
+      {
+        "t": 12,
         "guess": "dog"
       }
     ],
-    "aiCorrectAt": 3
+    "aiCorrectAt": 12
   },
   {
     "word": "elephant",
@@ -82,14 +98,10 @@ window.ROUNDS = [
     "guesses": [
       {
         "t": 3,
-        "guess": "pig"
-      },
-      {
-        "t": 6,
         "guess": "elephant"
       }
     ],
-    "aiCorrectAt": 6
+    "aiCorrectAt": 3
   },
   {
     "word": "fish",
@@ -98,10 +110,14 @@ window.ROUNDS = [
     "guesses": [
       {
         "t": 3,
+        "guess": "leaf"
+      },
+      {
+        "t": 6,
         "guess": "fish"
       }
     ],
-    "aiCorrectAt": 3
+    "aiCorrectAt": 6
   },
   {
     "word": "frog",
@@ -112,14 +128,22 @@ window.ROUNDS = [
     "guesses": [
       {
         "t": 3,
-        "guess": "pig"
+        "guess": "apple"
       },
       {
         "t": 6,
+        "guess": "cat"
+      },
+      {
+        "t": 9,
+        "guess": "bear"
+      },
+      {
+        "t": 12,
         "guess": "frog"
       }
     ],
-    "aiCorrectAt": 6
+    "aiCorrectAt": 12
   },
   {
     "word": "giraffe",
@@ -147,14 +171,22 @@ window.ROUNDS = [
     "guesses": [
       {
         "t": 3,
-        "guess": "snowman"
+        "guess": "apple"
       },
       {
         "t": 6,
+        "guess": "pear"
+      },
+      {
+        "t": 9,
+        "guess": "snowman"
+      },
+      {
+        "t": 12,
         "guess": "rabbit"
       }
     ],
-    "aiCorrectAt": 6
+    "aiCorrectAt": 12
   },
   {
     "word": "rat",
@@ -243,14 +275,30 @@ window.ROUNDS = [
     "guesses": [
       {
         "t": 3,
-        "guess": "balloon"
+        "guess": "wave"
       },
       {
         "t": 6,
+        "guess": "balloon"
+      },
+      {
+        "t": 9,
+        "guess": "kite"
+      },
+      {
+        "t": 12,
+        "guess": "kite"
+      },
+      {
+        "t": 15,
+        "guess": "kite"
+      },
+      {
+        "t": 18,
         "guess": "snake"
       }
     ],
-    "aiCorrectAt": 6
+    "aiCorrectAt": 18
   },
   {
     "word": "turtle",

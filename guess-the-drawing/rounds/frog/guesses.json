@@ -1,10 +1,18 @@
 [
   {
     "t": 3,
-    "guess": "pig"
+    "guess": "apple"
   },
   {
     "t": 6,
+    "guess": "cat"
+  },
+  {
+    "t": 9,
+    "guess": "bear"
+  },
+  {
+    "t": 12,
     "guess": "frog"
   }
 ]

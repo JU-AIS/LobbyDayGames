@@ -1,10 +1,26 @@
 [
   {
     "t": 3,
-    "guess": "balloon"
+    "guess": "wave"
   },
   {
     "t": 6,
+    "guess": "balloon"
+  },
+  {
+    "t": 9,
+    "guess": "kite"
+  },
+  {
+    "t": 12,
+    "guess": "kite"
+  },
+  {
+    "t": 15,
+    "guess": "kite"
+  },
+  {
+    "t": 18,
     "guess": "snake"
   }
 ]
