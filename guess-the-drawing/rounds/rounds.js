@@ -98,10 +98,14 @@ window.ROUNDS = [
     "guesses": [
       {
         "t": 3,
+        "guess": "head"
+      },
+      {
+        "t": 6,
         "guess": "elephant"
       }
     ],
-    "aiCorrectAt": 3
+    "aiCorrectAt": 6
   },
   {
     "word": "fish",

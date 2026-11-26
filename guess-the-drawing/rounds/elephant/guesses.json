@@ -1,6 +1,10 @@
 [
   {
     "t": 3,
+    "guess": "head"
+  },
+  {
+    "t": 6,
     "guess": "elephant"
   }
 ]
