@@ -112,9 +112,14 @@ The same game also runs over http(s) on GitHub Pages. It switches to web mode au
 - No staff panel (Ctrl+Shift+A does nothing).
 - The scoreboard is per device ("Your scores on this device") and the prize wording is hidden.
 - The pages carry `noindex`, so search engines should not list them.
+- An "All games" link in the top bar leads back to the dashboard (https://juais.se/LobbyDayGames/). The offline kiosk has no such link, so players cannot leave the game.
 
 The offline version is unchanged: open `game/index.html` from disk. The web version deploys automatically on every push to `main` via GitHub Pages.
 
 ## Status
 
-Game playable with demo rounds (branch `feat/gtd-game`). Prerender on `feat/gtd-prerender`, not yet run against Haiku. Target: first draft on GitHub and Discord by 2026-11-25, used at the lobby days 2026-11-27 (JIBS) and 2026-11-30 (JTH).
+Live at https://juais.se/LobbyDayGames/ and ready for the lobby days 2026-11-27 (JIBS) and 2026-11-30 (JTH).
+
+14 recorded rounds. 13 are playable (AI right at 6 s or later, or never): bird, crocodile, dog, elephant, fish, frog, giraffe, rabbit, rat (the AI never gets it), shark, snake, turtle, wolf. `cat` is kept but never picked, because the AI recognises it at once. Most animal videos are slowed down so the drawing takes about 25 s.
+
+Not yet tested: double-click (`file://`) on the lobby laptop, and a live sign-up row in the Google Sheet.

@@ -156,6 +156,12 @@
   if (window.GTD_WEB) {
     $("board-title").textContent = "Your scores on this device";
     $("rule-prize").hidden = true;
+    // Link back to the dashboard (juais.se/LobbyDayGames/). Not on the kiosk, so players cannot leave the game.
+    var back = document.createElement("a");
+    back.href = "../../";
+    back.className = "back-link";
+    back.textContent = "All games";
+    document.querySelector(".topbar-right").prepend(back);
   }
 
   function goStart() {

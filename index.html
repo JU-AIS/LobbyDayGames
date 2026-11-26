@@ -4,11 +4,109 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <meta http-equiv="refresh" content="0; url=guess-the-drawing/game/">
   <title>JU AIS Lobby Day Games</title>
-  <script>location.replace('guess-the-drawing/game/');</script>
+  <link rel="icon" href="guess-the-drawing/game/assets/favicon.svg" type="image/svg+xml">
+  <style>
+    /* Same JU AIS theme as the games. Fonts and logo are reused from guess-the-drawing/game/assets/. */
+    @font-face { font-family: "Libre Caslon Text"; font-weight: 400; font-display: swap; src: url("guess-the-drawing/game/assets/libre-caslon-text-400.woff2") format("woff2"); }
+    @font-face { font-family: "Libre Caslon Text"; font-weight: 700; font-display: swap; src: url("guess-the-drawing/game/assets/libre-caslon-text-700.woff2") format("woff2"); }
+    @font-face { font-family: "IBM Plex Mono"; font-weight: 400; font-display: swap; src: url("guess-the-drawing/game/assets/ibm-plex-mono-400.woff2") format("woff2"); }
+    @font-face { font-family: "IBM Plex Mono"; font-weight: 500 700; font-display: swap; src: url("guess-the-drawing/game/assets/ibm-plex-mono-500.woff2") format("woff2"); }
+    :root {
+      --bg: #1f1630; --card: #2e2246; --card-soft: #42325f; --fg: #ffffff; --muted: #d3cce0;
+      --line: rgba(255, 255, 255, .22); --accent: #c9b3f2; --accent-fg: #1e1035; --ai: #ff8fab;
+      --radius-lg: 16px;
+      --font-display: "Libre Caslon Text", Georgia, "Times New Roman", serif;
+      --font-mono: "IBM Plex Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+      color-scheme: dark;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; color: var(--fg); font: 18px/1.5 var(--font-display);
+      background-color: var(--bg);
+      background-image: radial-gradient(rgba(201, 179, 242, .16) 1.2px, transparent 1.4px);
+      background-size: 26px 26px;
+    }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 14px max(16px, 3vw); border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font: 600 17px var(--font-mono); letter-spacing: .14em; }
+    .brand img { width: 30px; height: 30px; border-radius: 22%; }
+    .topbar span { font: 500 14px var(--font-mono); color: var(--muted); letter-spacing: .06em; }
+    main { max-width: 1100px; margin: 0 auto; padding: 48px max(16px, 3vw) 64px; }
+    .eyebrow { margin: 0; font: 600 13px var(--font-mono); text-transform: uppercase; letter-spacing: .18em; color: var(--accent); }
+    h1 { margin: 10px 0 8px; font: 700 clamp(38px, 5vw, 64px)/1.05 var(--font-display); }
+    .lede { margin: 0 0 36px; color: var(--muted); max-width: 40em; }
+    .games { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 22px; }
+    .game {
+      display: flex; flex-direction: column; text-decoration: none; color: inherit;
+      background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden;
+      transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+    a.game:hover, a.game:focus-visible {
+      transform: translateY(-3px); border-color: var(--accent); outline: none;
+      box-shadow: 0 18px 40px -20px rgba(0, 0, 0, .7), 0 0 60px -30px rgba(201, 179, 242, .6);
+    }
+    .thumb { aspect-ratio: 16 / 10; background: #fff; display: flex; align-items: center; justify-content: center; }
+    .thumb img { max-width: 80%; max-height: 80%; }
+    .thumb.empty { background: var(--card-soft); color: var(--muted); font: 600 13px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; }
+    .body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .body h2 { margin: 0; font: 700 26px/1.15 var(--font-display); }
+    .body p { margin: 0; color: var(--muted); font-size: 16px; }
+    .row { margin-top: auto; padding-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .meta { font: 500 13px var(--font-mono); color: var(--muted); }
+    .play {
+      font: 600 14px var(--font-mono); letter-spacing: .06em; padding: 8px 16px; border-radius: 99px;
+      background: var(--accent); color: var(--accent-fg);
+    }
+    .soon { font: 600 12px var(--font-mono); text-transform: uppercase; letter-spacing: .12em; color: var(--ai); border: 1px dashed var(--ai); padding: 3px 10px; border-radius: 99px; }
+    div.game { opacity: .7; }
+    @media (prefers-reduced-motion: reduce) { .game { transition: none; } a.game:hover { transform: none; } }
+  </style>
 </head>
 <body>
-  <p><a href="guess-the-drawing/game/">Open Guess the Drawing</a></p>
+  <header class="topbar">
+    <span class="brand"><img src="guess-the-drawing/game/assets/logo-dark.svg" alt="">JU AIS</span>
+    <span>Lobby day games</span>
+  </header>
+  <main>
+    <p class="eyebrow">Jönköping University AI Student Association</p>
+    <h1>Lobby day games.</h1>
+    <p class="lede">Quick games about AI from the JU AIS lobby days. Pick one and see if you can beat the machine.</p>
+    <div id="games" class="games"></div>
+    <noscript><p><a href="guess-the-drawing/game/">Play Guess the Drawing</a></p></noscript>
+  </main>
+
+  <script src="games.js"></script>
+  <script>
+    // Build one card per entry in games.js. Built with textContent only (no HTML injection).
+    (function () {
+      var root = document.getElementById("games");
+      function el(tag, cls, text) {
+        var e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text) e.textContent = text;
+        return e;
+      }
+      (window.GAMES || []).forEach(function (g) {
+        var playable = g.status === "playable";
+        var card = el(playable ? "a" : "div", "game");
+        if (playable) card.href = g.href;
+        var thumb = el("div", "thumb" + (g.thumb ? "" : " empty"), g.thumb ? "" : "Coming soon");
+        if (g.thumb) { var img = el("img"); img.src = g.thumb; img.alt = ""; thumb.appendChild(img); }
+        var body = el("div", "body");
+        body.appendChild(el("h2", "", g.title));
+        body.appendChild(el("p", "", g.tagline));
+        var row = el("div", "row");
+        row.appendChild(el("span", "meta", g.meta || ""));
+        row.appendChild(playable ? el("span", "play", "Play") : el("span", "soon", "Coming soon"));
+        body.appendChild(row);
+        card.appendChild(thumb);
+        card.appendChild(body);
+        root.appendChild(card);
+      });
+    })();
+  </script>
 </body>
 </html>

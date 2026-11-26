@@ -54,6 +54,8 @@ body {
 }
 .brand { display: flex; align-items: center; gap: 10px; font: 600 17px var(--font-mono); letter-spacing: .14em; }
 .brand-mark { width: 30px; height: 30px; border-radius: 22%; }
+.back-link { color: var(--accent); text-decoration: none; }
+.back-link:hover { text-decoration: underline; }
 .topbar-right { display: flex; align-items: center; gap: 14px; font: 500 14px var(--font-mono); color: var(--muted); letter-spacing: .06em; }
 .demo-flag {
   font: 600 12px var(--font-mono); text-transform: uppercase; letter-spacing: .12em;
